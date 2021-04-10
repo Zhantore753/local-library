@@ -1,13 +1,29 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+let createError = require('http-errors');
+let express = require('express');
+let path = require('path');
+let cookieParser = require('cookie-parser');
+let logger = require('morgan');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+let app = express();
 
-var app = express();
+//Устанавливаем соединение с mongoose
+let mongoose = require('mongoose');
+//mongoDB = url от базы данных
+let mongoDB = 'mongodb+srv://Zhantore:zhantore@cluster0.nebvi.mongodb.net/local-library?retryWrites=true&w=majority';
+mongoose.connect(mongoDB, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+// Позволим Mongoose использовать глобальную библиотеку промисов
+mongoose.Promise = global.Promise;
+// Получение подключения по умолчанию
+let db = mongoose.connection;
+// Привязать подключение к событию ошибки  (получать сообщения об ошибках подключения)
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+let indexRouter = require('./routes/index');
+let usersRouter = require('./routes/users');
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
