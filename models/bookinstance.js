@@ -1,8 +1,9 @@
-var mongoose = require('mongoose');
+let moment = require('moment');
+let mongoose = require('mongoose');
 
-var Schema = mongoose.Schema;
+let Schema = mongoose.Schema;
 
-var BookInstanceSchema = new Schema({
+let BookInstanceSchema = new Schema({
     book: { type: Schema.ObjectId, ref: 'Book', required: true }, //ссылка на книгу
     imprint: {type: String, required: true},
     status: {type: String, required: true, enum: ['Available', 'Maintenance', 'Loaned', 'Reserved'], default: 'Maintenance'},
@@ -16,6 +17,12 @@ BookInstanceSchema
 .virtual('url')
 .get(function () {
     return '/catalog/bookinstance/' + this._id;
+});
+
+BookInstanceSchema
+.virtual('due_back_formatted')
+.get(function () {
+    return moment(this.due_back).format('MMMM Do, YYYY');
 });
 
 //Export model

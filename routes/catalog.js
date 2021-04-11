@@ -11,6 +11,7 @@ let book_instance_controller = require('../controllers/bookinstanceController');
 
 // GET запрос для корневой страницы каталога.
 router.get('/', book_controller.index);
+// console.log(router.get('/', book_controller.index()));
 
 // GET запрос для создания книги. Должен появиться до маршрута, показывающего книгу(использует id)
 router.get('/book/create', book_controller.book_create_get);

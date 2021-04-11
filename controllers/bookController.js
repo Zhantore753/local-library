@@ -19,6 +19,7 @@ exports.index = function(req, res) {
             BookInstance.countDocuments({status:'Available'}, callback);
         },
         author_count: function(callback) {
+            // console.log(callback.toString());
             Author.countDocuments({}, callback);
         },
         genre_count: function(callback) {
@@ -29,8 +30,14 @@ exports.index = function(req, res) {
     });
 };
 
-exports.book_list = function(req, res) {
-    res.send('NOT IMPLEMENTED: Book list');
+exports.book_list = function(req, res, next) {
+    Book.find({}, 'title author')
+    .populate('author')
+    .exec(function (err, list_books) {
+        if (err) { return next(err); }
+        //Successful, so render
+        res.render('book_list', { title: 'Book List', book_list: list_books });
+    });
 };
 
 exports.book_detail = function(req, res) {
