@@ -1,6 +1,6 @@
 // Модуль(файл) модели Автора
-
 let mongoose = require('mongoose');
+let moment = require('moment');
 
 let Schema = mongoose.Schema;
 
@@ -27,6 +27,12 @@ AuthorSchema
 .virtual('url') // создаем виртульно свойтсво url для формирование url строки с помощью id автора
 .get(function () {
     return '/catalog/author/' + this._id;
+});
+
+AuthorSchema
+.virtual('birth_death')
+.get(function(){
+    return {birth: moment(this.date_of_birth).format('MMMM Do, YYYY'), death: moment(this.date_of_death).format('MMMM Do, YYYY')}
 });
 
 //Export model
