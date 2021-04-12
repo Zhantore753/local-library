@@ -32,7 +32,7 @@ AuthorSchema
 AuthorSchema
 .virtual('birth_death')
 .get(function(){
-    return {birth: moment(this.date_of_birth).format('MMMM Do, YYYY'), death: moment(this.date_of_death).format('MMMM Do, YYYY')}
+    return {birth: this.date_of_birth ? (moment(this.date_of_birth).format('MMMM Do, YYYY')) : null, death: this.date_of_death ? (moment(this.date_of_death).format('MMMM Do, YYYY')) : null}
 });
 
 //Export model

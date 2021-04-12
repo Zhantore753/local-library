@@ -1,6 +1,8 @@
 let Book = require('../models/book');
 let async = require('async');
 let Genre = require('../models/genre');
+const validator = require('express-validator');
+
 
 exports.genre_list = function(req, res, next) {
     Genre.find()
@@ -36,13 +38,53 @@ exports.genre_detail = function(req, res, next) {
     });
 };
 
-exports.genre_create_get = function(req, res) {
-    res.send('NOT IMPLEMENTED: Genre create GET');
+// Отображение формы для создания Жанра
+exports.genre_create_get = function(req, res, next) {
+    res.render('genre_form', { title: 'Create Genre' });
 };
 
-exports.genre_create_post = function(req, res) {
-    res.send('NOT IMPLEMENTED: Genre create POST');
-};
+// Обрабтка POST запроса от формы создания Жанра
+exports.genre_create_post = [
+    // В данном случае передается не функция, а массив с функциями и методами которые будут выполняться последовательно
+    // Проверка на пустоту.
+    validator.body('name', 'Genre name required').trim().isLength({ min: 1 }),
+    // Создает дезинфицирующее средство для escape () любых опасных HTML-символов в поле имени.
+    validator.sanitizeBody('name').escape(),
+    // middlware для остальных проверок на валидность заполнения формы
+    (req, res, next) => {
+        // Extract the validation errors from a request.
+        const errors = validator.validationResult(req);
+        // Создаем новый экземляр Жанра(Схемы).
+        let genre = new Genre(
+            { name: req.body.name }
+        );
+        if (!errors.isEmpty()) {
+            // Если error не пустой то в таком случае передаем ошибку и заново отображаем пустую форму
+            res.render('genre_form', { title: 'Create Genre', genre: genre, errors: errors.array()});
+            return;
+        }
+        else {
+            // Сюда попадаем если форму валидна
+            // Проверка на новизну данного жанра в БД
+            Genre.findOne({ 'name': req.body.name })
+            .exec( function(err, found_genre) {
+                if (err) { return next(err); }
+                if (found_genre) {
+                    // Если жанр был найден то перенаправляем на страницу данного жанра.
+                    res.redirect(found_genre.url);
+                }
+                // Если жанр не был найден создаем его
+                else {
+                    genre.save(function (err) {
+                        if (err) { return next(err); }
+                        // Сохраняем жанр. Перенапрляем на страницу этого жанра
+                        res.redirect(genre.url);
+                    });
+                }
+            });
+        }
+    }
+];
 
 exports.genre_delete_get = function(req, res) {
     res.send('NOT IMPLEMENTED: Genre delete GET');
