@@ -86,12 +86,28 @@ exports.genre_create_post = [
     }
 ];
 
-exports.genre_delete_get = function(req, res) {
-    res.send('NOT IMPLEMENTED: Genre delete GET');
+exports.genre_delete_get = function(req, res,next) {
+    Genre.findById(req.params.id)
+    .exec(function (err, genre) {
+        if (err) { return next(err); }
+        if(genre == null){
+            res.redirect('/catalog/genres');
+        }
+        //Successful, so render
+        res.render('genre_delete', { title: 'Genre Delete', genre: genre });
+    });
 };
 
 exports.genre_delete_post = function(req, res) {
-    res.send('NOT IMPLEMENTED: Genre delete POST');
+    Genre.findById(req.body.genreid)
+    .exec(function(err, genre){
+        if (err) { return next(err); }
+        Genre.findByIdAndRemove(req.body.genreid, function deleteGenre(err) {
+            if (err) { return next(err); }
+            // Успех-перейти к списку авторов
+            res.redirect('/catalog/genres')
+        })
+    });
 };
 
 exports.genre_update_get = function(req, res) {

@@ -142,12 +142,56 @@ exports.book_create_post = [
     }
 ];
 
-exports.book_delete_get = function(req, res) {
-    res.send('NOT IMPLEMENTED: Book delete GET');
+exports.book_delete_get = function(req, res, next) {
+    async.parallel({
+        book: function(callback) {
+            Book.findById(req.params.id)
+              .populate('author')
+              .populate('genre')
+              .exec(callback);
+        },
+        book_instance: function(callback) {
+          BookInstance.find({ 'book': req.params.id }).exec(callback);
+        },
+    }, function(err, results){
+        if(err){return next(err)}
+        if(results.book == null){
+            res.redirect('/catalog/books');
+        }
+        console.log(results.book_instance);
+        res.render('book_delete', { title: 'Delete Book', book: results.book, book_instance: results.book_instance } );
+    });
 };
 
-exports.book_delete_post = function(req, res) {
-    res.send('NOT IMPLEMENTED: Book delete POST');
+exports.book_delete_post = function(req, res, next) {
+    async.parallel({
+        book: function(callback) {
+            Book.findById(req.body.bookid)
+              .populate('author')
+              .populate('genre')
+              .exec(callback);
+        },
+        book_instance: function(callback) {
+          BookInstance.find({ 'book': req.body.bookid }).exec(callback);
+        },
+    }, function(err, results) {
+        if (err) { return next(err); }
+        // Success
+        if (results.book_instance.length > 0) {
+            // Автор книги. Визуализация выполняется так же, как и для GET route.
+            res.render('book_delete', { title: 'Delete Book', book: results.book, book_instance: results.book_instance } );
+            return;
+        }
+        else {
+            console.log(req.body.bookid);
+            //У автора нет никаких книг. Удалить объект и перенаправить в список авторов.
+            Book.findByIdAndRemove(req.body.bookid, function deleteBook(err) {
+                if (err) { return next(err); }
+                // Успех-перейти к списку авторов
+                res.redirect('/catalog/books')
+            })
+        }
+    });
 };
 
 exports.book_update_get = function(req, res) {

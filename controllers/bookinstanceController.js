@@ -84,12 +84,30 @@ exports.bookinstance_create_post = [
 
 // Показать форму удаления книги по запросу GET.
 exports.bookinstance_delete_get = function(req, res) {
-    res.send('NOT IMPLEMENTED: BookInstance delete GET');
+    BookInstance.findById(req.params.id)
+    .populate('book')
+    .exec(function (err, bookinstance) {
+      if (err) { return next(err); }
+      if (bookinstance==null) { // No results.
+          let err = new Error('Book copy not found');
+          err.status = 404;
+          return next(err);
+        }
+      // Successful, so render.
+      res.render('bookinstance_delete', { title: 'Copy Delete: '+bookinstance.book.title, bookinstance:  bookinstance});
+    })
 };
 
 // Удалить книгу по запросу POST.
 exports.bookinstance_delete_post = function(req, res) {
-    res.send('NOT IMPLEMENTED: BookInstance delete POST');
+    BookInstance.findById(req.body.bookinstanceid)
+    .exec(function(err, bookinstance){
+        if (err) { return next(err); }
+        BookInstance.findByIdAndRemove(req.body.bookinstanceid, function deleteBookInstance(){
+            if (err) { return next(err); }
+            res.redirect('/catalog/bookinstances');
+        })
+    });
 };
 
 // Показать форму обновления книги по запросу GET.
