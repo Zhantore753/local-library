@@ -3,13 +3,16 @@ let express = require('express');
 let path = require('path');
 let cookieParser = require('cookie-parser');
 let logger = require('morgan');
+let compression = require('compression');
+let helmet = require('helmet');
 
 let app = express();
 
 //Устанавливаем соединение с mongoose
 let mongoose = require('mongoose');
 //mongoDB = url от базы данных
-let mongoDB = 'mongodb+srv://Zhantore:zhantore@cluster0.nebvi.mongodb.net/local-library?retryWrites=true&w=majority';
+var dev_db_url = 'mongodb+srv://Zhantore:zhantore@cluster0.nebvi.mongodb.net/local-library?retryWrites=true&w=majority';
+var mongoDB = process.env.MONGODB_URI || dev_db_url;
 mongoose.connect(mongoDB, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -34,6 +37,8 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(helmet());
+app.use(compression()); 
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
