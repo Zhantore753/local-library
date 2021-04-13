@@ -1,39 +1,44 @@
-// Модуль(файл) модели Автора
 let mongoose = require('mongoose');
-let moment = require('moment');
+const { DateTime } = require("luxon");  //for date handling
 
 let Schema = mongoose.Schema;
 
-// Схема модели автора
-// Определяем схему
 let AuthorSchema = new Schema({
-    first_name: {type: String, required: true, maxlength: 100},
-    family_name: {type: String, required: true, maxlength: 100},
-    date_of_birth: {type: Date},
-    date_of_death: {type: Date},
-});
-//required обязательное поле
-
-// Виртуальный объект - это свойство, которое не хранится в MongoDB
-// Виртуальное свойство для полного имени автора
-AuthorSchema
-.virtual('name') // создаем виртульно свойство name которое составляется из Имени и Фамиилии
-.get(function () {
-    return this.family_name + ', ' + this.first_name;
+  first_name: { type: String, required: true, maxLength: 100 },
+  family_name: { type: String, required: true, maxLength: 100 },
+  date_of_birth: { type: Date },
+  date_of_death: { type: Date }
 });
 
-// Виртуальное свойство - URL автора
-AuthorSchema
-.virtual('url') // создаем виртульно свойтсво url для формирование url строки с помощью id автора
-.get(function () {
-    return '/catalog/author/' + this._id;
+// Virtual for author "full" name.
+AuthorSchema.virtual('name').get(function() {
+  return this.family_name + ', ' + this.first_name;
 });
 
-AuthorSchema
-.virtual('birth_death')
-.get(function(){
-    return {birth: this.date_of_birth ? (moment(this.date_of_birth).format('MMMM Do, YYYY')) : null, death: this.date_of_death ? (moment(this.date_of_death).format('MMMM Do, YYYY')) : null}
+// Virtual for this author instance URL.
+AuthorSchema.virtual('url').get(function() {
+  return '/catalog/author/' + this._id;
 });
 
-//Export model
+AuthorSchema.virtual('lifespan').get(function() {
+  let lifetime_string = '';
+  if (this.date_of_birth) {
+    lifetime_string = DateTime.fromJSDate(this.date_of_birth).toLocaleString(DateTime.DATE_MED);
+  }
+  lifetime_string += ' - ';
+  if (this.date_of_death) {
+    lifetime_string += DateTime.fromJSDate(this.date_of_death).toLocaleString(DateTime.DATE_MED)
+  }
+  return lifetime_string;
+});
+
+AuthorSchema.virtual('date_of_birth_yyyy_mm_dd').get(function() {
+  return DateTime.fromJSDate(this.date_of_birth).toISODate(); //format 'YYYY-MM-DD'
+});
+
+AuthorSchema.virtual('date_of_death_yyyy_mm_dd').get(function() {
+  return DateTime.fromJSDate(this.date_of_death).toISODate(); //format 'YYYY-MM-DD'
+});
+
+// Export model.
 module.exports = mongoose.model('Author', AuthorSchema);
