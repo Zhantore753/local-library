@@ -21,7 +21,6 @@ exports.index = function(req, res) {
             BookInstance.countDocuments({status:'Available'}, callback);
         },
         author_count: function(callback) {
-            // console.log(callback.toString());
             Author.countDocuments({}, callback);
         },
         genre_count: function(callback) {
@@ -159,7 +158,6 @@ exports.book_delete_get = function(req, res, next) {
         if(results.book == null){
             res.redirect('/catalog/books');
         }
-        console.log(results.book_instance);
         res.render('book_delete', { title: 'Delete Book', book: results.book, book_instance: results.book_instance } );
     });
 };
@@ -184,7 +182,6 @@ exports.book_delete_post = function(req, res, next) {
             return;
         }
         else {
-            console.log(req.body.bookid);
             //У автора нет никаких книг. Удалить объект и перенаправить в список авторов.
             Book.findByIdAndRemove(req.body.bookid, function deleteBook(err) {
                 if (err) { return next(err); }
